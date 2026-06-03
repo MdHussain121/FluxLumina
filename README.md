@@ -23,28 +23,32 @@ LuminaField comes pre-loaded with several physical setups:
 
 ### 1. Electrostatics & Superposition Principle
 The simulation uses Coulomb's law and the superposition principle to calculate electrostatic forces at any point:
+
 *   **Electric Potential ($V$):** Evaluated at a coordinate $P$ by summing the scalar potentials from all charges:
-    $$V(P) = \sum_{i} \frac{k_e \cdot q_i}{r_i}$$
-    where $k_e$ is the Coulomb constant (scaled to screen pixels), $q_i$ is the charge magnitude, and $r_i$ is the distance to charge $i$.
+
+$$V(P) = \sum_{i} \frac{k_e \cdot q_i}{r_i}$$
+
+where $k_e$ is the Coulomb constant (scaled to screen pixels), $q_i$ is the charge magnitude, and $r_i$ is the distance to charge $i$.
+
 *   **Electric Field Vector ($\vec{E}$):** Evaluated by taking the gradient of the potential, which resolves to:
-    $$\vec{E}(P) = \sum_{i} \frac{k_e \cdot q_i}{r_i^2} \hat{r}_i$$
-    where $\hat{r}_i$ is the unit vector pointing from charge $i$ to point $P$.
+
+$$\vec{E}(P) = \sum_{i} \frac{k_e \cdot q_i}{r_i^2} \hat{r}_i$$
+
+where $\hat{r}_i$ is the unit vector pointing from charge $i$ to point $P$.
 
 ---
 
 ### 2. Runge-Kutta 4th Order (RK4) for Field Lines
 To trace the field lines ("Silk Threads") smoothly without accumulating numerical integration errors:
 *   Instead of simple Euler integration (which diverges quickly near charges), LuminaField uses the **Runge-Kutta 4th Order (RK4)** integration method to calculate the field line path:
-    $$
-    \begin{aligned}
-    \vec{k}_1 &= \vec{f}(\vec{x}_n) \\
-    \vec{k}_2 &= \vec{f}\left(\vec{x}_n + \frac{h}{2}\vec{k}_1\right) \\
-    \vec{k}_3 &= \vec{f}\left(\vec{x}_n + \frac{h}{2}\vec{k}_2\right) \\
-    \vec{k}_4 &= \vec{f}(\vec{x}_n + h\vec{k}_3) \\
-    \vec{x}_{n+1} &= \vec{x}_n + \frac{h}{6}(\vec{k}_1 + 2\vec{k}_2 + 2\vec{k}_3 + \vec{k}_4)
-    \end{aligned}
-    $$
-    where $\vec{f}(\vec{x})$ is the normalized electric field vector direction at location $\vec{x}$, and $h$ is the integration step size.
+
+$$ \vec{k}_1 = \vec{f}(\vec{x}_n) $$
+$$ \vec{k}_2 = \vec{f}\left(\vec{x}_n + \frac{h}{2}\vec{k}_1\right) $$
+$$ \vec{k}_3 = \vec{f}\left(\vec{x}_n + \frac{h}{2}\vec{k}_2\right) $$
+$$ \vec{k}_4 = \vec{f}(\vec{x}_n + h\vec{k}_3) $$
+$$ \vec{x}_{n+1} = \vec{x}_n + \frac{h}{6}(\vec{k}_1 + 2\vec{k}_2 + 2\vec{k}_3 + \vec{k}_4) $$
+
+where $\vec{f}(\vec{x})$ is the normalized electric field vector direction at location $\vec{x}$, and $h$ is the integration step size.
 *   Tracing stops dynamically when the path exits the screen bounds or enters the boundary radius of a charge (avoiding division-by-zero singularities).
 
 ---
@@ -55,16 +59,21 @@ To render continuous voltage lines (contours where $V = \text{const}$):
 *   **Binary Threshold States**: Each cell corner is categorized as active (potential $\ge$ threshold) or inactive ($<$ threshold), forming a 4-bit state index ($0$ to $15$).
 *   **Saddle Point Resolution**: For ambiguous states ($5$ and $10$), the average center value of the cell is evaluated to determine contour connectivity.
 *   **Linear Interpolation**: Line endpoints on cell edges are calculated using linear interpolation of the boundary potentials to draw mathematically precise curves:
-    $$t_{interp} = \frac{V_{target} - V_1}{V_2 - V_1}$$
+
+$$t_{interp} = \frac{V_{target} - V_1}{V_2 - V_1}$$
 
 ---
 
 ### 4. Kinematics & Collision Dynamics
 When kinematics are enabled, charges move dynamically based on the electrostatic forces they exert on one another:
 *   **Coulomb Forces**: Charges accelerate according to the electrostatic force vector:
-    $$\vec{F}_i = q_i \sum_{j \ne i} \vec{E}_j$$
+
+$$\vec{F}_i = q_i \sum_{j \ne i} \vec{E}_j$$
+
 *   **Singularity Softening**: A softening factor $r_0^2$ is added to the distance calculation to prevent infinite forces (singularities) during close encounters:
-    $$F \propto \frac{q_1 q_2}{r^2 + r_0^2}$$
+
+$$F \propto \frac{q_1 q_2}{r^2 + r_0^2}$$
+
 *   **Elastic Overlaps & Damping**: Near-contact interactions ($r < r_{collision}$) trigger boundary restoration forces and velocity damping (friction) to simulate inelastic collisions or charge sticking.
 
 ---
