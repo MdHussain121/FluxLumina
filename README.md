@@ -1,9 +1,9 @@
 # LuminaField - Electrostatic Sandbox
 
-LuminaField is an interactive, browser-based physics sandbox for visualizing electric fields and potentials in real-time.
+LuminaField is a **physics simulation project** designed to visualize and interact with electrostatic fields, potentials, and charge dynamics in real-time. It provides an intuitive, visual medium to explore electromagnetic theory, numerical integration, and grid-based contouring.
 
 > **Suggested GitHub Repo Description:**
-> ⚡ An interactive, high-performance HTML5 Canvas physics sandbox for visualizing electric fields, potentials, field lines (via RK4 tracing), and equipotential contours (via Marching Squares) with real-time charge kinematics.
+> ⚡ A physics simulation project and interactive HTML5 Canvas sandbox for visualizing electric fields, potentials, field lines (via RK4 tracing), and equipotential contours (via Marching Squares) with real-time charge kinematics.
 
 ---
 
@@ -24,24 +24,28 @@ LuminaField comes pre-loaded with several physical setups:
 ### 1. Electrostatics & Superposition Principle
 The simulation uses Coulomb's law and the superposition principle to calculate electrostatic forces at any point:
 *   **Electric Potential ($V$):** Evaluated at a coordinate $P$ by summing the scalar potentials from all charges:
-    $$V(P) = \sum_{i} \frac{k \cdot q_i}{r_i}$$
-    where $k$ is the Coulomb constant (scaled to screen pixels), $q_i$ is the charge magnitude, and $r_i$ is the distance to charge $i$.
+    $$V(P) = \sum_{i} \frac{k_e \cdot q_i}{r_i}$$
+    where $k_e$ is the Coulomb constant (scaled to screen pixels), $q_i$ is the charge magnitude, and $r_i$ is the distance to charge $i$.
 *   **Electric Field Vector ($\vec{E}$):** Evaluated by taking the gradient of the potential, which resolves to:
-    $$\vec{E}(P) = \sum_{i} \frac{k \cdot q_i}{r_i^2} \hat{r}_i$$
+    $$\vec{E}(P) = \sum_{i} \frac{k_e \cdot q_i}{r_i^2} \hat{r}_i$$
     where $\hat{r}_i$ is the unit vector pointing from charge $i$ to point $P$.
 
 ---
 
 ### 2. Runge-Kutta 4th Order (RK4) for Field Lines
-To trace the "Silk Threads" (field lines) smoothly without accumulation errors:
-*   Instead of simple Euler integration (which spirals out or diverges near singularities), LuminaField uses **Runge-Kutta 4th Order (RK4)** integration:
-    $$\vec{k}_1 = f(x_n)$$
-    $$\vec{k}_2 = f(x_n + \frac{h}{2}\vec{k}_1)$$
-    $$\vec{k}_3 = f(x_n + \frac{h}{2}\vec{k}_2)$$
-    $$\vec{k}_4 = f(x_n + h\vec{k}_3)$$
-    $$x_{n+1} = x_n + \frac{h}{6}(\vec{k}_1 + 2\vec{k}_2 + 2\vec{k}_3 + \vec{k}_4)$$
-    where $f(x)$ is the normalized electric field direction at location $x$, and $h$ is the integration step size.
-*   Tracing stops dynamically when the path exits the screen bounds or hits the boundary radius of a charge (avoiding division by zero).
+To trace the field lines ("Silk Threads") smoothly without accumulating numerical integration errors:
+*   Instead of simple Euler integration (which diverges quickly near charges), LuminaField uses the **Runge-Kutta 4th Order (RK4)** integration method to calculate the field line path:
+    $$
+    \begin{aligned}
+    \vec{k}_1 &= \vec{f}(\vec{x}_n) \\
+    \vec{k}_2 &= \vec{f}\left(\vec{x}_n + \frac{h}{2}\vec{k}_1\right) \\
+    \vec{k}_3 &= \vec{f}\left(\vec{x}_n + \frac{h}{2}\vec{k}_2\right) \\
+    \vec{k}_4 &= \vec{f}(\vec{x}_n + h\vec{k}_3) \\
+    \vec{x}_{n+1} &= \vec{x}_n + \frac{h}{6}(\vec{k}_1 + 2\vec{k}_2 + 2\vec{k}_3 + \vec{k}_4)
+    \end{aligned}
+    $$
+    where $\vec{f}(\vec{x})$ is the normalized electric field vector direction at location $\vec{x}$, and $h$ is the integration step size.
+*   Tracing stops dynamically when the path exits the screen bounds or enters the boundary radius of a charge (avoiding division-by-zero singularities).
 
 ---
 
@@ -57,7 +61,8 @@ To render continuous voltage lines (contours where $V = \text{const}$):
 
 ### 4. Kinematics & Collision Dynamics
 When kinematics are enabled, charges move dynamically based on the electrostatic forces they exert on one another:
-*   **Coulomb Forces**: Charges accelerate according to $\vec{F}_i = q_i \sum_{j \ne i} \vec{E}_j$.
+*   **Coulomb Forces**: Charges accelerate according to the electrostatic force vector:
+    $$\vec{F}_i = q_i \sum_{j \ne i} \vec{E}_j$$
 *   **Singularity Softening**: A softening factor $r_0^2$ is added to the distance calculation to prevent infinite forces (singularities) during close encounters:
     $$F \propto \frac{q_1 q_2}{r^2 + r_0^2}$$
 *   **Elastic Overlaps & Damping**: Near-contact interactions ($r < r_{collision}$) trigger boundary restoration forces and velocity damping (friction) to simulate inelastic collisions or charge sticking.
@@ -82,4 +87,3 @@ When kinematics are enabled, charges move dynamically based on the electrostatic
    ```bash
    npm run dev
    ```
-
