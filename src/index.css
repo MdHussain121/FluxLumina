@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-obsidian: #050505;
+  --color-neon-red: #FF0055;
+  --color-electric-blue: #00F2FF;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-obsidian);
+  color: white;
+  overflow: hidden;
+}
